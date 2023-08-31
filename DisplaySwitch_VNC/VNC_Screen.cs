@@ -80,8 +80,12 @@ namespace DisplaySwitch_VNC
         public static int[] PositionForDisplay(bool collapsed, string screenname)
         {
             VNC_Screen screen = GetScreenByDeviceName(screenname);
-            if (collapsed) { return new int[] { screen.X + 20, screen.Height - 95 - 20 }; }
-            else { return new int[] { screen.X + 20, screen.Y + 20 }; }
+            if (collapsed) {
+                // 2023-08-31: BUGFIX: Careful! We shouldn't assume screen.Y is always 0
+                return new int[] { screen.X + 20, screen.Y + screen.Height - 95 - 20 };
+            } else {
+                return new int[] { screen.X + 20, screen.Y + 20 };
+            }
         }
 
         /// <summary>
