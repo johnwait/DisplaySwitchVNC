@@ -107,8 +107,8 @@ namespace DisplaySwitch_VNC
         /// </summary>
         private void nticoMain_MouseDoubleClick(object sender, MouseEventArgs e)
         {
-            //Show SwitchUI form and allow it to be closed
-            ShowSwitchUI(true);
+            //Show SwitchUI form
+            ShowSwitchUI(false);
         }
 
         #endregion
@@ -120,8 +120,8 @@ namespace DisplaySwitch_VNC
         /// </summary>
         private void toolMenuItemShow_Click(object sender, EventArgs e)
         {
-            //Show SwitchUI form and allow it to be closed rather than collapsed
-            ShowSwitchUI(true);
+            //Show SwitchUI form
+            ShowSwitchUI(false);
         }
 
         /// <summary>
