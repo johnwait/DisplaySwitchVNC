@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Security.Principal;
 using Microsoft.Win32;
 
 namespace DisplaySwitch_Service_VNC
@@ -13,16 +14,53 @@ namespace DisplaySwitch_Service_VNC
         private static readonly string appname = "DisplaySwitch";
 
         /// <summary>
+        /// Translate a SAM object (user, group) name into its associated Security Identifier (SID).
+        /// </summary>
+        /// <param name="accountName">SAM object name in the form DOMAIN\ObjectName</param>
+        /// <returns>A string containing the formatted Security Identifier (SID), or null</returns>
+        private static string GetSIDFromName(string accountName) {
+            // @src https://stackoverflow.com/a/1040629/3865919  (also has a non-CLR version)
+            // @author https://stackoverflow.com/users/51691/crb
+            try {
+                NTAccount ntAcct = new NTAccount(accountName);
+                SecurityIdentifier sid = (SecurityIdentifier)ntAcct.Translate(typeof(SecurityIdentifier));
+                return sid.ToString();
+            } catch {
+                return null;
+            }
+        }
+
+        /// <summary>
         /// Queries the Registry to detect the last user that logged in (i.e. the current user)
         /// </summary>
-        /// <returns>A string containing the Security Identifier (SID) for the logged in user</returns>
+        /// <returns>A string containing the Security Identifier (SID) for the logged on user, or null</returns>
         private static string GetSIDForCurrentUser()
         {
             RegistryKey regkey = GetHKLM().OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Authentication\\LogonUI");
-            string value = "";
-            try { value = regkey.GetValue("LastLoggedOnUserSID").ToString(); regkey.Close(); }
-            catch { }
-            return value;
+            object regValue = null;
+            string value = null;
+            try {
+                if ((regValue = regkey.GetValue("LastLoggedOnUserSID")) != null) {
+                    value = regValue.ToString();
+                } else {
+                    // 2023-08-31: Added to support VNC servers running on Windows 7 & later hosts
+                    string userName = "";
+                    if ((regValue = regkey.GetValue("LastLoggedOnSAMUser")) != null) {
+                        userName = regValue.ToString();
+                    } else if ((regValue = regkey.GetValue("LastLoggedOnUser")) != null) {
+                        userName = regValue.ToString();
+                    } else {
+                        ///throw new Exception("Failed to retrieve SID from most recently connected Windows user");
+                    }
+                    if (userName.Substring(0, 2) == ".\\") {
+                        userName = Environment.MachineName + userName.Substring(1);
+                    }
+                    value = GetSIDFromName(userName);
+                }
+            } catch {} finally {
+                regkey.Close();
+            }
+            return value; // null if no SID found
         }
 
         /// <summary>
