@@ -82,16 +82,19 @@ namespace DisplaySwitch_Service_VNC
         /// </summary>
         /// <param name="reg">Whether the key to be set belongs to Local Machine or Current User</param>
         /// <param name="valuename">The name of the String to retrieve</param>
-        /// <returns>The value of the String</returns>
+        /// <returns>The registry value read as a string, or null</returns>
         public static string GetRegistryValue(RegHives reg, string valuename)
         {
-            RegistryKey regkey;
+            RegistryKey regkey = null;
             if (reg == RegHives.HKLM) { regkey = RegistryManagement.GetHKLM().OpenSubKey("SOFTWARE\\RealVNC\\vncserver", false); }
             else if (reg == RegHives.HKLM_DS) { regkey = RegistryManagement.GetHKLM().OpenSubKey("SOFTWARE\\RealVNC_DisplaySwitch", false); }
             else { regkey = Registry.Users.OpenSubKey(GetSIDForCurrentUser() + "\\SOFTWARE\\RealVNC_DisplaySwitch", false); }
-            string value = "";
-            try { value = regkey.GetValue(valuename).ToString(); regkey.Close(); }
-            catch { }
+            string value = null;
+            if (regkey == null) { throw new Exception("No valid registry subkey found from which to read the expected value"); }
+            try {
+                value = regkey.GetValue(valuename).ToString();
+            } catch {}
+            regkey.Close();
             return value;
         }
 
@@ -103,10 +106,11 @@ namespace DisplaySwitch_Service_VNC
         /// <param name="value">The value to set</param>
         public static void SetRegistryValue(RegHives reg, string valuename, string value)
         {
-            RegistryKey regkey;
+            RegistryKey regkey = null;
             if (reg == RegHives.HKLM) { regkey = RegistryManagement.GetHKLM().CreateSubKey("SOFTWARE\\RealVNC\\vncserver", true); }
             else if (reg == RegHives.HKLM_DS) { regkey = RegistryManagement.GetHKLM().CreateSubKey("SOFTWARE\\RealVNC_DisplaySwitch", true); }
             else { regkey = Registry.Users.CreateSubKey(GetSIDForCurrentUser() + "\\SOFTWARE\\RealVNC_DisplaySwitch", true); }
+            if (regkey == null) { throw new Exception("No valid registry subkey found to which write the provided value"); }
             regkey.SetValue(valuename, value, RegistryValueKind.String);
             regkey.Close();
         }

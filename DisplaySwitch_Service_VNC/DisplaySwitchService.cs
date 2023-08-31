@@ -105,17 +105,22 @@ namespace DisplaySwitch_Service_VNC
         /// </summary>
         private void tmrCheckDisplayDevice_Tick(object sender, ElapsedEventArgs e)
         {
-            //If the master record for DisplayDevice does not match the user's selection, update it
-            if (RegistryManagement.GetRegistryValue(RegHives.HKLM, "DisplayDevice") != RegistryManagement.GetRegistryValue(RegHives.HKCU, "DisplayDevice"))
-            {
-                RegistryManagement.SetRegistryValue(RegHives.HKLM, "DisplayDevice", RegistryManagement.GetRegistryValue(RegHives.HKCU, "DisplayDevice"));
-            }
+            // 2023-08-31: Catching (and discarding) exceptions as a way to avoid updating registry values
+            //             when GetRegistryValue() fails, mostly when/if GetSIDForCurrentUser() returns null.
+            //             NOTE: Consider finding a less expensive way to accomplish the same.
+            try {
+                //If the master record for DisplayDevice does not match the user's selection, update it
+                if (RegistryManagement.GetRegistryValue(RegHives.HKLM, "DisplayDevice") != RegistryManagement.GetRegistryValue(RegHives.HKCU, "DisplayDevice"))
+                {
+                    RegistryManagement.SetRegistryValue(RegHives.HKLM, "DisplayDevice", RegistryManagement.GetRegistryValue(RegHives.HKCU, "DisplayDevice"));
+                }
 
-            //If the master record for Primary Monitor does not match the user's selection, update it
-            if (RegistryManagement.GetRegistryValue(RegHives.HKLM_DS, "PrimaryMonitor") != RegistryManagement.GetRegistryValue(RegHives.HKCU, "PrimaryMonitor"))
-            {
-                RegistryManagement.SetRegistryValue(RegHives.HKLM_DS, "PrimaryMonitor", RegistryManagement.GetRegistryValue(RegHives.HKCU, "PrimaryMonitor"));
-            }
+                //If the master record for Primary Monitor does not match the user's selection, update it
+                if (RegistryManagement.GetRegistryValue(RegHives.HKLM_DS, "PrimaryMonitor") != RegistryManagement.GetRegistryValue(RegHives.HKCU, "PrimaryMonitor"))
+                {
+                    RegistryManagement.SetRegistryValue(RegHives.HKLM_DS, "PrimaryMonitor", RegistryManagement.GetRegistryValue(RegHives.HKCU, "PrimaryMonitor"));
+                }
+            } catch {};
         }
     }
 }
