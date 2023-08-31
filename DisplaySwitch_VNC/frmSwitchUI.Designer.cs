@@ -127,6 +127,8 @@
             this.btnShow.Text = "Show";
             this.btnShow.UseVisualStyleBackColor = true;
             this.btnShow.Click += new System.EventHandler(this.btnShow_Click);
+            this.btnShow.MouseEnter += new System.EventHandler(this.btnShow_MouseEnter);
+            this.btnShow.MouseLeave += new System.EventHandler(this.btnShow_MouseLeave);
             // 
             // tmrCheckReg
             // 

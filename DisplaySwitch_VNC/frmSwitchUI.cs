@@ -21,7 +21,7 @@ namespace DisplaySwitch_VNC
         #region Constructor
 
         /// <summary>
-        /// COnstructor for the formo
+        /// Constructor for the form
         /// </summary>
         /// <param name="_allowclose">Is the form allowed to be closed (e.g. shown when VNC session not in progress)</param>
         public frmSwitchUI(bool _allowclose)
@@ -56,13 +56,31 @@ namespace DisplaySwitch_VNC
             if (iscollapsed != collapse)
             {
                 //Set required size for form and show/hide panels with relevant controls
-                if (!collapse) { this.Size = new Size(370, 95); pnlMin.Hide(); pnlMain.Show(); this.ControlBox = true; }
-                else { this.Size = new Size(136, 95); pnlMain.Hide(); pnlMin.Show(); this.ControlBox = false; }
+                if (!collapse) {
+                    this.Opacity = 1.0;
+                    this.Size = new Size(370, 95);
+                    pnlMin.Hide();
+                    pnlMain.Show();
+                    this.ControlBox = true;
+                } else {
+                    this.Size = new Size(136, 95);
+                    pnlMain.Hide();
+                    pnlMin.Show();
+                    this.ControlBox = false;
+                    this.Opacity = 0.5;
+                }
             }
 
             //Test if form is to be collapsed, and set the appropriate position for the form
-            if (!collapse) { int[] windowpos = VNC_Screen.PositionForDisplay(false, RegistryManagement.GetRegistryValue("DisplayDevice")); this.Left = windowpos[0]; this.Top = windowpos[1]; }
-            else { int[] windowpos = VNC_Screen.PositionForDisplay(true, RegistryManagement.GetRegistryValue("DisplayDevice")); this.Left = windowpos[0]; this.Top = windowpos[1]; }
+            if (!collapse) {
+                int[] windowpos = VNC_Screen.PositionForDisplay(false, RegistryManagement.GetRegistryValue("DisplayDevice"));
+                this.Left = windowpos[0];
+                this.Top = windowpos[1];
+            } else {
+                int[] windowpos = VNC_Screen.PositionForDisplay(true, RegistryManagement.GetRegistryValue("DisplayDevice"));
+                this.Left = windowpos[0];
+                this.Top = windowpos[1];
+            }
 
             iscollapsed = collapse;
         }
@@ -88,6 +106,26 @@ namespace DisplaySwitch_VNC
         private void btnShow_Click(object sender, EventArgs e)
         {
             RefreshSwitchUI(false);
+        }
+
+        /// <summary>
+        /// Restore full opacity of collapsed form when mouse hovers the [Show] button
+        /// </summary>
+        private void btnShow_MouseEnter(object sender, EventArgs e)
+        {
+            if (iscollapsed) {
+                this.Opacity = 1.0;
+            }
+        }
+
+        /// <summary>
+        /// Set collapsed form as semi-transparent when mouse isn't over the [Show] button anymore
+        /// </summary>
+        private void btnShow_MouseLeave(object sender, EventArgs e)
+        {
+            if (iscollapsed) {
+                this.Opacity = 0.5;
+            }
         }
 
         #endregion
